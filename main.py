@@ -6,7 +6,11 @@ import queue
 import sys
 import sounddevice as sd
 import json
+import pyclip
+from pynput import keyboard
 from os import system
+
+keyb = keyboard.Controller()
 
 from vosk import Model, KaldiRecognizer
 
@@ -92,6 +96,18 @@ def transcribe(root, but):
         parser.exit(type(e).__name__ + ": " + str(e))
 
 
+
+
+
+
+def write(text):
+    global keymap, keytxt
+    pyclip.copy(text)
+    try:
+        keyb.type(text)
+    except Exception as e:
+        pass
+
 def close():
     root.destroy()
     sys.exit(0)
@@ -170,6 +186,7 @@ def transcribe():
                     result = json.loads(f'{rec.Result()}')['text']
                     voice.config(text=result, fg=green)
                     root.update()
+                    write(result)
 
                 else:
                     partial = json.loads(rec.PartialResult())['partial']
@@ -203,13 +220,13 @@ root = Tk()
 root.geometry("400x300+50+50")
 root.title("TuxWrite")
 root.config(bg=bg)
-
+root.attributes('-topmost', True)
 mic = PhotoImage(file=r"img/mic.png")
 
 voice = Label(text="^_^", fg=fg, bg=bg, font=font, width=49, wraplength=350, justify="center")
 voice.pack(pady=40)
 
-but = Button(image=mic, relief="flat", highlightthickness=0, borderwidth=0, bg=bg, command=transcribe)
+but = Button(image=mic, relief="flat", highlightthickness=0, highlightcolor=bg, borderwidth=0, bg=bg, command=transcribe)
 but.pack(side="bottom", pady=10)
 
 root.mainloop()
