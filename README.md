@@ -1,2 +1,40 @@
-# tuxwrite
-A app to write anything you speak like other android keyboards do but for linux
+# TuxWrite
+
+An application that enables you to speak and write like some mobile keyboards and works offline.
+
+
+## Screenshots
+
+<img src='https://lh3.googleusercontent.com/fife/AKsag4OpRx7PgfOJr7Bso-MgH6N8Uuojb2-4gNoGLKp7e8UPCYxbtdIpIRwmBTJdlc8Z300enp2ldgcqf_NjMjY6W9i80bUMCy6F0oNpGWX8SnSuoLP1NtCFXkHZDxUqf_DNhwWLvzCWrUK7G9yFj4lX3ISGabNdTEodvGI8kXxXJc7k1L10GXFzI3fQIMLSYevI2S_MWeLrnXS-rOhg9dYmFlGv-7BFcgRPfW4c1aEIfumkMKk54FR6dfx9xL9G5vhfQd7iXcbOeiem5XfQX7ewHkBwNOpi9cdMitUhrGj6DLiZA7kIw_cFCOYwB_4noKebG9m8hpstX2Zh2Q3TIJh8hyRZANBFWpX7iKjmTYh5a5s3dsvGHPHbevj7C71wFZhlZ7feN4jp8GD0BbaBPbm8c3ZbNA48AqPs43NaBIP0oOTXyh5Jr2FjZ6nHaEQyhfkNoyJ5jPmYAjYJLxOEQrp0c1Wfvw7v7YPrM9vb6QNOcoZkdmJ2p1UlTuOANx46IkHiyQiCFRwWhXhIQKSnA7fybDUBqul_-ziQPsUbu5Zzg551UvuPLRBPTQRHHEX57nl4CCZJnRzL9YKQ7aV5e3G6e-6eMIKEdcu-k7-XMV7o1WOOHves2wdLygERqYrBQd2i64nNPHPCKrHzT6Bavahhe0AogRPbd3ojNm90SDO7GOkF04JXD_-VUER5XGcnfsvhfVtD9rEoLQwhx2JN_rEYlpVDH_iYpsB2aS4wrz-xxH_pii5D5w4uWwg2W0lkeMNGCDJ2_3pk5YE6XpfLmW5pJ37FkV8Fm3Xtruqmj69CACc5kiZ8uieXgdpgXYYTvKbImx6-ftbFSrdF1cHUpougQSPLc3YIaLghuQrnPIFmZjUTTj4QmL-g6JO1UpPf_0YQ5yWbil0ZIavxpmY8S03KFmayPdyPB9exZVv6OC3X5SNGCX5AJtcB0iVaQoyvC7hqZ-6BxFK_0X0Hn_72a56hp763L4KaYc4tSTIqlhRzLdO_UmF5sFVdZ66MIIZhmxbC0FZaFUzslkhdfOkzPUprX0uT06ZLARO5lx-aJuAjwkX1Rkgb6F6V7dL9jMF54dO_DIBLZbo-IQy3YEGWtTWXIMsqfiXa0xoKMWrGqUjup0DinqmLlz7U_GEwudCYB5cTNJ1L41kCdlEiYu-dWN3w1X87DUBeYv6Z1pFqZsAeB-IBQ5xjShzaVrnK3eEqd6efp92S5n8PdYZpvCRyvGSgzE7E74hAXwHoEdIPmzsge3BE4sb2Pq_HDs_sso3wlWlreXyVeWoMX0b7zz51lVEp1L9g9y3ZOedBd2aDqhfv9M6YZNNLAnWKf0f7yevoJ3a6MS11ZNKCLC78YVzZLW-jtGuVyLC9NbFn3ZPLlVx6zZmUQlKBRK4CVLrPPbwxsVT1W0DgrkV6cGKRxUfK4o5_cOfUxGdGRPlczSubDLTF7mOcD6vHkhtP4CYexz8Dm5wlBWDfTiKWnjQcTXAOwx0VfYam5fQTu4A69sgf_5RaxgMw-kdg7OB7ZHC9zPadGhg_lMgxaKGJ=w1920-h977'>
+
+It uses live speech to convert speech to text and then write it automatically in supported applications and for others is copies the text to clipboard.
+
+## How to Install
+
+```bash
+git clone https://github.com/Sherry65-code/tuxwrite
+cd tuxwrite
+pip install -r req.txt
+# Download a voice model and edit its language in config.py (save it by unzipping it to $HOME/.cache/vosk/<model>)
+```
+
+## Run it using
+
+```bash
+python3 main.py
+```
+
+## Modules used
+
+- vosk
+- pyclip
+- pynput
+- tkinter
+
+## License
+
+`MIT License`
+
+## Coded by
+
+`Parambir Singh`

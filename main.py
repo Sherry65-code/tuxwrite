@@ -9,6 +9,7 @@ import json
 import pyclip
 from pynput import keyboard
 from os import system
+import config
 
 keyb = keyboard.Controller()
 
@@ -156,9 +157,13 @@ wannarun = True
 def transcribe():
     global running
     if running:
-        close()
+        running = False
+        but.config(image=mic)
+        root.update()
     else:
         running = True
+        but.config(image=micworking)
+        root.update()
     but.config(text='Listening')
     root.update()
     try:
@@ -167,7 +172,7 @@ def transcribe():
             # soundfile expects an int, sounddevice provides a float:
             args.samplerate = int(device_info["default_samplerate"])
         if args.model is None:
-            model = Model(lang="en-in")
+            model = Model(lang=config.lang)
         else:
             model = Model(lang=args.model)
         if args.filename:
@@ -179,6 +184,8 @@ def transcribe():
             islisten = True
             rec = KaldiRecognizer(model, args.samplerate)
             while True:
+                if not running:
+                    break
                 if not wannarun:
                     return
                 data = q.get()
@@ -220,13 +227,14 @@ root = Tk()
 root.geometry("400x300+50+50")
 root.title("TuxWrite")
 root.config(bg=bg)
+root.resizable(0,0)
 root.attributes('-topmost', True)
 mic = PhotoImage(file=r"img/mic.png")
-
-voice = Label(text="^_^", fg=fg, bg=bg, font=font, width=49, wraplength=350, justify="center")
+micworking = PhotoImage(file=r'img/mic-working.png')
+voice = Label(text="Welcome to TuxWrite!", fg=fg, bg=bg, font=font, width=49, wraplength=350, justify="center")
 voice.pack(pady=40)
 
-but = Button(image=mic, relief="flat", highlightthickness=0, highlightcolor=bg, borderwidth=0, bg=bg, command=transcribe)
+but = Button(image=mic, relief="flat", highlightthickness=0, borderwidth=0, bg=bg, bd=0,pady=0, padx=0, highlightcolor=bg, activebackground=bg, activeforeground=bg, command=transcribe)
 but.pack(side="bottom", pady=10)
 
 root.mainloop()
