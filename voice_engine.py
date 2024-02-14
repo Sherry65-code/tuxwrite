@@ -5,7 +5,11 @@ import sys
 import os
 import zipfile
 import requests
+import json
+import dynamics as dy
+from colors import COLOR
 from tqdm import tqdm
+import virt_keyboard
 
 # Global Variables
 q, model, default_device, device_info, samplerate = None, None, None, None, None
@@ -70,7 +74,7 @@ def init():
     for path in possible_paths:
         if os.path.exists(path):
             model_path = path
-            print(f"[DEBUG] Model Path = {model_path}")
+            # print(f"[DEBUG] Model Path = {model_path}")
             break
     if model_path == "":
         while True:
@@ -108,14 +112,27 @@ def callback(indata, frames, time, status):
 
 def stt():
 
-    
     with sd.RawInputStream(samplerate=samplerate, blocksize=8000, device=default_device, dtype="int16", channels=1, callback=callback):
         
         rec = KaldiRecognizer(model, samplerate)
 
-        while True:
-            data = q.get()
-            if rec.AcceptWaveform(data):
-                print(rec.Result())
-            else:
-                print(rec.PartialResult())
+        try:
+            while True:
+                data = q.get()
+                if rec.AcceptWaveform(data):
+                    result = rec.Result()
+                    result_data = json.loads(result)['text']
+                    if result_data == 'boom':
+                        print("\nBYE BYE!")
+                        exit(0)
+                    dy.display(text=result_data, location=dy.LEFT, bg=f"{COLOR['bg_green']}\r")
+                    virt_keyboard.sus(result_data)
+                else:
+                    result = rec.PartialResult()
+                    result_data = json.loads(result)['partial']
+                    if result_data != "":
+                        # Data is passed
+                        dy.display(text=result_data, location=dy.LEFT, bg=f"{COLOR['bg_red']}\r")
+        except KeyboardInterrupt:
+            print("Exiting")
+            sys.exit(0)
