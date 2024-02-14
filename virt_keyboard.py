@@ -4,6 +4,7 @@ import os
 
 def sus(text):
     pyautogui.typewrite(text)
+    pyautogui.press("enter")
 
 def shoot():
     # Check the operating system
@@ -24,4 +25,3 @@ def shoot():
     screenshot.save(os.path.join(desktop_path, 'screenshot.png'))
 
     print("Screenshot saved to desktop.")
-more

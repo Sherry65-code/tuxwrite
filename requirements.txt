@@ -1,3 +1,5 @@
 vosk
 sounddevice
 pyautogui
+pyaudio
+speechrecognition

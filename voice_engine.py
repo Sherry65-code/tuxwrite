@@ -1,4 +1,5 @@
 from vosk import Model, KaldiRecognizer
+import speech_recognition as sr
 import sounddevice as sd
 import queue
 import sys
@@ -12,7 +13,7 @@ from tqdm import tqdm
 import virt_keyboard
 
 # Global Variables
-q, model, default_device, device_info, samplerate = None, None, None, None, None
+q, model, default_device, device_info, samplerate, recognizer, _is_online = None, None, None, None, None, None, False
 
 def download_file(url, file_name=None):
     try:
@@ -67,43 +68,48 @@ def unzip_file(zip_file, extract_to):
     except Exception as e:
         print(f"[ERROR] Error unzipping file: {e}")
 
-def init():
-    global q, model, default_device, device_info, samplerate
-    model_path = ""
-    possible_paths = ["vosk-model-en-in-0.5", "vosk-model-small-en-in-0.4"]
-    for path in possible_paths:
-        if os.path.exists(path):
-            model_path = path
-            # print(f"[DEBUG] Model Path = {model_path}")
-            break
-    if model_path == "":
-        while True:
-            print("Choose Which Model to Download?\n1. Large Model\n2. Small Model")
-            io2 = input("Enter 1 or 2:")
-            try:
-                if io2 == "1":
-                    print("[INFO] Downloading Large Model... 1GB apprx.")
-                    model_path = possible_paths[0]
-                    download_file("https://alphacephei.com/vosk/models/vosk-model-en-in-0.5.zip", f"{possible_paths[0]}.zip")
-                    unzip_file(f"{possible_paths[0]}.zip", ".")
-                    break
-                elif io2 == "2":
-                    print("[INFO] Downloading Small Model... 36MB apprx.")
-                    model_path = possible_paths[1]
-                    download_file("https://alphacephei.com/vosk/models/vosk-model-small-en-in-0.4.zip", f"{possible_paths[1]}.zip")
-                    unzip_file(f"{possible_paths[1]}.zip", ".")
-                    break
-            except Exception:
-                print("[ERROR] An Error Occured!")
-                sys.exit(-1)
-            else:
-                print("[WARNING] Incorrect Value")
-    
-    q = queue.Queue()
-    model = Model(model_path=model_path)
-    default_device = sd.default.device
-    device_info = sd.query_devices(default_device, "input")
-    samplerate = int(device_info["default_samplerate"])
+def init(is_online=False):
+    global _is_online, q, model, default_device, device_info, samplerate
+    _is_online = is_online
+    if is_online:
+        global recognizer
+        recognizer = sr.Recognizer()
+    else:
+        model_path = ""
+        possible_paths = ["vosk-model-en-in-0.5", "vosk-model-small-en-in-0.4"]
+        for path in possible_paths:
+            if os.path.exists(path):
+                model_path = path
+                # print(f"[DEBUG] Model Path = {model_path}")
+                break
+        if model_path == "":
+            while True:
+                print("Choose Which Model to Download?\n1. Large Model\n2. Small Model")
+                io2 = input("Enter 1 or 2:")
+                try:
+                    if io2 == "1":
+                        print("[INFO] Downloading Large Model... 1GB apprx.")
+                        model_path = possible_paths[0]
+                        download_file("https://alphacephei.com/vosk/models/vosk-model-en-in-0.5.zip", f"{possible_paths[0]}.zip")
+                        unzip_file(f"{possible_paths[0]}.zip", ".")
+                        break
+                    elif io2 == "2":
+                        print("[INFO] Downloading Small Model... 36MB apprx.")
+                        model_path = possible_paths[1]
+                        download_file("https://alphacephei.com/vosk/models/vosk-model-small-en-in-0.4.zip", f"{possible_paths[1]}.zip")
+                        unzip_file(f"{possible_paths[1]}.zip", ".")
+                        break
+                except Exception:
+                    print("[ERROR] An Error Occured!")
+                    sys.exit(-1)
+                else:
+                    print("[WARNING] Incorrect Value")
+
+        q = queue.Queue()
+        model = Model(model_path=model_path)
+        default_device = sd.default.device
+        device_info = sd.query_devices(default_device, "input")
+        samplerate = int(device_info["default_samplerate"])
 
 def callback(indata, frames, time, status):
     if status:
@@ -111,28 +117,50 @@ def callback(indata, frames, time, status):
     q.put(bytes(indata))
 
 def stt():
-
-    with sd.RawInputStream(samplerate=samplerate, blocksize=8000, device=default_device, dtype="int16", channels=1, callback=callback):
-        
-        rec = KaldiRecognizer(model, samplerate)
-
+    global _is_online
+    if _is_online:
         try:
             while True:
-                data = q.get()
-                if rec.AcceptWaveform(data):
-                    result = rec.Result()
-                    result_data = json.loads(result)['text']
-                    if result_data == 'boom':
-                        print("\nBYE BYE!")
-                        exit(0)
-                    dy.display(text=result_data, location=dy.LEFT, bg=f"{COLOR['bg_green']}\r")
-                    virt_keyboard.sus(result_data)
-                else:
-                    result = rec.PartialResult()
-                    result_data = json.loads(result)['partial']
-                    if result_data != "":
-                        # Data is passed
-                        dy.display(text=result_data, location=dy.LEFT, bg=f"{COLOR['bg_red']}\r")
+                with sr.Microphone() as source:
+                    recognizer.adjust_for_ambient_noise(source)
+                    audio = recognizer.listen(source)
+                    try:
+                        result_data = recognizer.recognize_google(audio)
+                        if result_data == 'boom':
+                            print("\nBYE BYE!")
+                            exit(0)
+                        dy.display(text=result_data, location=dy.LEFT, bg=f"{COLOR['bg_green']}")
+                        virt_keyboard.sus(f"{result_data}")
+                    except sr.UnknownValueError:
+                        dy.display(text="", location=dy.LEFT, bg=f"{COLOR['bg_red']}\r")
+                    except sr.RequestError:
+                        dy.display(text="Network Not Found", location=dy.LEFT, bg=f"{COLOR['bg_red']}\r")
+                        sys.exit(-2)
         except KeyboardInterrupt:
-            print("Exiting")
-            sys.exit(0)
+            print("Bye Bye!")
+            exit(0)
+    else:
+        with sd.RawInputStream(samplerate=samplerate, blocksize=8000, device=default_device, dtype="int16", channels=1, callback=callback):
+
+            rec = KaldiRecognizer(model, samplerate)
+
+            try:
+                while True:
+                    data = q.get()
+                    if rec.AcceptWaveform(data):
+                        result = rec.Result()
+                        result_data = json.loads(result)['text']
+                        if result_data == 'boom':
+                            print("\nBYE BYE!")
+                            exit(0)
+                        dy.display(text=result_data, location=dy.LEFT, bg=f"{COLOR['bg_green']}\r")
+                        virt_keyboard.sus(f"{result_data}")
+                    else:
+                        result = rec.PartialResult()
+                        result_data = json.loads(result)['partial']
+                        if result_data != "":
+                            # Data is passed
+                            dy.display(text=result_data, location=dy.LEFT, bg=f"{COLOR['bg_red']}\r")
+            except KeyboardInterrupt:
+                print("Exiting")
+                sys.exit(0)
